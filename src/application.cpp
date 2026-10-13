@@ -17,6 +17,7 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 #include <framework/shader.h>
 #include <framework/window.h>
+#include <framework/trackball.h>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -26,6 +27,7 @@ public:
     Application()
         : m_window("Final Project", glm::ivec2(1024, 1024), OpenGLVersion::GL41)
         , m_texture(RESOURCE_ROOT "resources/checkerboard.png")
+        , trackBall(&m_window, glm::radians(50.0f))
     {
         m_window.registerKeyCallback([this](int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS)
@@ -86,6 +88,9 @@ public:
             // ...
             glEnable(GL_DEPTH_TEST);
 
+            // set projection / view to the camera
+            m_projectionMatrix = trackBall.projectionMatrix();
+            m_viewMatrix = trackBall.viewMatrix();
             const glm::mat4 mvpMatrix = m_projectionMatrix * m_viewMatrix * m_modelMatrix;
             // Normals should be transformed differently than positions (ignoring translations + dealing with scaling):
             // https://paroj.github.io/gltut/Illumination/Tut09%20Normal%20Transformation.html
@@ -160,12 +165,14 @@ private:
     Shader m_shadowShader;
 
     std::vector<GPUMesh> m_meshes;
+
     Texture m_texture;
     bool m_useMaterial { true };
 
+    Trackball trackBall;
     // Projection and view matrices for you to fill in and use
-    glm::mat4 m_projectionMatrix = glm::perspective(glm::radians(80.0f), 1.0f, 0.1f, 30.0f);
-    glm::mat4 m_viewMatrix = glm::lookAt(glm::vec3(-1, 1, -1), glm::vec3(0), glm::vec3(0, 1, 0));
+    glm::mat4 m_projectionMatrix;
+    glm::mat4 m_viewMatrix;
     glm::mat4 m_modelMatrix { 1.0f };
 };
 
